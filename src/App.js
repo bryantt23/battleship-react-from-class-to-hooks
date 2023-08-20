@@ -1,28 +1,25 @@
-import { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.css';
 import GameEngine from './components/GameEngine';
 import { renderUi, renderComputerUiCheat, computerMove } from './appUtils';
 
-class App extends Component {
-  constructor() {
-    super();
-    this.state = {
-      cheat: true,
-      playerPositionsThatHaveBeenAttacked: [],
-      computerPositionsThatHaveBeenAttacked: [],
-      playerBoard: [],
-      computerBoard: [],
-      allShipsSunk: false,
-      winner: null,
-      isPlayerTurn: true,
-      disabled: false,
-      gameEngineClass: null,
-      playerBoardClass: null,
-      computerBoardClass: null
-    };
-  }
+const App = () => {
+  const [state, setState] = useState({
+    cheat: true,
+    playerPositionsThatHaveBeenAttacked: [],
+    computerPositionsThatHaveBeenAttacked: [],
+    playerBoard: [],
+    computerBoard: [],
+    allShipsSunk: false,
+    winner: null,
+    isPlayerTurn: true,
+    disabled: false,
+    gameEngineClass: null,
+    playerBoardClass: null,
+    computerBoardClass: null
+  });
 
-  componentDidMount() {
+  useEffect(() => {
     const gameEngineClass = new GameEngine();
     gameEngineClass.startGame();
     const playerBoardClass = gameEngineClass.playerGameboard;
@@ -36,7 +33,8 @@ class App extends Component {
     }
     let arr2 = JSON.parse(JSON.stringify(arr));
 
-    this.setState({
+    setState(prevState => ({
+      ...prevState,
       playerBoard: [...playerBoardClass.getBoard()],
       computerBoard: [...computerBoardClass.getBoard()],
       playerPositionsThatHaveBeenAttacked: arr,
@@ -44,30 +42,30 @@ class App extends Component {
       gameEngineClass,
       playerBoardClass,
       computerBoardClass
-    });
-  }
+    }));
+  }, []);
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevState.isPlayerTurn === true && this.state.isPlayerTurn === false) {
+  useEffect(() => {
+    if (!state.isPlayerTurn) {
       computerMove(
-        this.state.gameEngineClass,
-        this.state.playerBoardClass,
-        this.state.playerPositionsThatHaveBeenAttacked,
-        this.updateBoardSectionState
+        state.gameEngineClass,
+        state.playerBoardClass,
+        state.playerPositionsThatHaveBeenAttacked,
+        updateBoardSectionState
       );
     }
-  }
+  }, [state.isPlayerTurn]);
 
-  updateBoardSectionState = (i, j, board) => {
-    const boardClass = this.state[board + 'Class'];
+  const updateBoardSectionState = (i, j, board) => {
+    const boardClass = state[board + 'Class'];
     let attackedProperty =
       board === 'playerBoard'
         ? 'playerPositionsThatHaveBeenAttacked'
         : 'computerPositionsThatHaveBeenAttacked';
-    const attackedBoard = this.state[attackedProperty];
+    const attackedBoard = state[attackedProperty];
 
     if (boardClass.isValidAttack(i, j, attackedBoard)) {
-      const boardState = this.state[board];
+      const boardState = state[board];
       const [updatedBoardState, updatedAttackBoard] = boardClass.receiveAttack(
         i,
         j,
@@ -79,60 +77,58 @@ class App extends Component {
       if (allShipsSunk) {
         let winner =
           board === 'playerBoard' ? 'Computer wins!' : 'Player wins!';
-        this.setState({
+        setState({
+          ...state,
           allShipsSunk: true,
-          winner: winner,
+          winner,
           disabled: true
         });
         return;
       }
 
-      this.setState({
+      setState({
+        ...state,
         [attackedProperty]: updatedAttackBoard,
         [board]: updatedBoardState,
-        isPlayerTurn: !this.state.isPlayerTurn
+        isPlayerTurn: !state.isPlayerTurn
       });
     }
   };
 
-  render() {
-    const playerBoardUi = renderUi(
-      'player',
-      this.state.playerBoard,
-      this.state.playerPositionsThatHaveBeenAttacked
-    );
-    const computerBoardUi = renderUi(
-      'computer',
-      this.state.computerBoard,
-      this.state.computerPositionsThatHaveBeenAttacked,
-      this.updateBoardSectionState
-    );
+  const playerBoardUi = renderUi(
+    'player',
+    state.playerBoard,
+    state.playerPositionsThatHaveBeenAttacked
+  );
+  const computerBoardUi = renderUi(
+    'computer',
+    state.computerBoard,
+    state.computerPositionsThatHaveBeenAttacked,
+    updateBoardSectionState
+  );
 
-    const computerBoardUiCheat = renderComputerUiCheat(
-      this.state.computerBoard
-    );
+  const computerBoardUiCheat = renderComputerUiCheat(state.computerBoard);
 
-    return (
-      <div className='App'>
-        <h1>Battleship</h1>
-        <div disabled={this.state.winner !== null} id='gameboard'>
-          <h3>Player Board</h3>
-          {playerBoardUi}
-          <h3>Computer Board</h3>
-          {computerBoardUi}
-        </div>
-        {this.state.disabled ? <h2>{this.state.winner}</h2> : ''}
-        <button
-          onClick={() => {
-            this.setState({ cheat: !this.state.cheat });
-          }}
-        >
-          {this.state.cheat ? 'Hide ' : 'Show '} computer's ships{' '}
-        </button>
-        {this.state.cheat && computerBoardUiCheat}
+  return (
+    <div className='App'>
+      <h1>Battleship</h1>
+      <div disabled={state.winner !== null} id='gameboard'>
+        <h3>Player Board</h3>
+        {playerBoardUi}
+        <h3>Computer Board</h3>
+        {computerBoardUi}
       </div>
-    );
-  }
-}
+      {state.disabled ? <h2>{state.winner}</h2> : ''}
+      <button
+        onClick={() => {
+          setState({ ...state, cheat: !state.cheat });
+        }}
+      >
+        {state.cheat ? 'Hide ' : 'Show '} computer's ships{' '}
+      </button>
+      {state.cheat && computerBoardUiCheat}
+    </div>
+  );
+};
 
 export default App;
