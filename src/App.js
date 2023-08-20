@@ -2,7 +2,9 @@ import { Component } from 'react';
 import './App.css';
 import GameEngine from './components/GameEngine';
 import BoardSection from './components/BoardSection';
-import { renderUi, renderComputerUiCheat } from './appUtils';
+import { renderUi, renderComputerUiCheat, computerMove } from './appUtils';
+
+// Declare the computerMoveHelper function outside of the class
 
 class App extends Component {
   gameEngine;
@@ -12,7 +14,7 @@ class App extends Component {
   constructor() {
     super();
     this.state = {
-      cheat: false,
+      cheat: true,
       playerPositionsThatHaveBeenAttacked: [],
       computerPositionsThatHaveBeenAttacked: [],
       playerBoard: [],
@@ -44,19 +46,6 @@ class App extends Component {
       playerPositionsThatHaveBeenAttacked: arr,
       computerPositionsThatHaveBeenAttacked: arr2
     });
-  }
-
-  computerMove() {
-    const [i, j] = this.gameEngine.computer.makePlay(this.playerBoard);
-
-    const attackedBoard = [...this.state.playerPositionsThatHaveBeenAttacked];
-
-    if (this.playerBoard.isValidAttack(i, j, attackedBoard)) {
-      this.updateBoardSectionState(i, j, 'playerBoard');
-    } else {
-      console.log('invalid computer move');
-      this.computerMove();
-    }
   }
 
   updateBoardSectionState = (i, j, board) => {
@@ -105,7 +94,13 @@ class App extends Component {
           isPlayerTurn: !this.state.isPlayerTurn
         },
         () => {
-          if (!this.state.isPlayerTurn) this.computerMove();
+          if (!this.state.isPlayerTurn)
+            computerMove(
+              this.gameEngine,
+              this.playerBoard,
+              this.state.playerPositionsThatHaveBeenAttacked,
+              this.updateBoardSectionState
+            );
         }
       );
     } else {

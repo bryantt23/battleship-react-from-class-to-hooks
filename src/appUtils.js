@@ -52,3 +52,24 @@ export const renderComputerUiCheat = computerBoard => {
   }
   return dom;
 };
+
+export const computerMove = (
+  gameEngine,
+  playerBoard,
+  attackedBoard,
+  updateBoardSectionStateCallback
+) => {
+  const [i, j] = gameEngine.computer.makePlay(playerBoard);
+
+  if (playerBoard.isValidAttack(i, j, attackedBoard)) {
+    updateBoardSectionStateCallback(i, j, 'playerBoard');
+  } else {
+    console.log('invalid computer move');
+    computerMove(
+      gameEngine,
+      playerBoard,
+      attackedBoard,
+      updateBoardSectionStateCallback
+    );
+  }
+};
