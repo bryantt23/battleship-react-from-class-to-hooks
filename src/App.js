@@ -1,16 +1,9 @@
 import { Component } from 'react';
 import './App.css';
 import GameEngine from './components/GameEngine';
-import BoardSection from './components/BoardSection';
 import { renderUi, renderComputerUiCheat, computerMove } from './appUtils';
 
-// Declare the computerMoveHelper function outside of the class
-
 class App extends Component {
-  gameEngine;
-  playerBoard;
-  computerBoard;
-
   constructor() {
     super();
     this.state = {
@@ -22,17 +15,20 @@ class App extends Component {
       allShipsSunk: false,
       winner: null,
       isPlayerTurn: true,
-      disabled: false
+      disabled: false,
+      gameEngineClass: null,
+      playerBoardClass: null,
+      computerBoardClass: null
     };
   }
 
   componentDidMount() {
-    this.gameEngine = new GameEngine();
-    this.gameEngine.startGame();
-    this.playerBoard = this.gameEngine.playerGameboard;
-    this.computerBoard = this.gameEngine.computerGameboard;
+    const gameEngineClass = new GameEngine();
+    gameEngineClass.startGame();
+    const playerBoardClass = gameEngineClass.playerGameboard;
+    const computerBoardClass = gameEngineClass.computerGameboard;
 
-    const boardSize = this.gameEngine.playerGameboard.getBoard().length;
+    const boardSize = playerBoardClass.getBoard().length;
 
     let arr = [];
     for (let i = 0; i < boardSize; i++) {
@@ -41,19 +37,21 @@ class App extends Component {
     let arr2 = JSON.parse(JSON.stringify(arr));
 
     this.setState({
-      playerBoard: [...this.gameEngine.playerGameboard.getBoard()],
-      computerBoard: [...this.gameEngine.computerGameboard.getBoard()],
+      playerBoard: [...playerBoardClass.getBoard()],
+      computerBoard: [...computerBoardClass.getBoard()],
       playerPositionsThatHaveBeenAttacked: arr,
-      computerPositionsThatHaveBeenAttacked: arr2
+      computerPositionsThatHaveBeenAttacked: arr2,
+      gameEngineClass,
+      playerBoardClass,
+      computerBoardClass
     });
   }
 
   componentDidUpdate(prevProps, prevState) {
-    // Check if the turn changed from player to computer
     if (prevState.isPlayerTurn === true && this.state.isPlayerTurn === false) {
       computerMove(
-        this.gameEngine,
-        this.playerBoard,
+        this.state.gameEngineClass,
+        this.state.playerBoardClass,
         this.state.playerPositionsThatHaveBeenAttacked,
         this.updateBoardSectionState
       );
@@ -61,36 +59,26 @@ class App extends Component {
   }
 
   updateBoardSectionState = (i, j, board) => {
-    let attackedProperty;
-    if (board === 'playerBoard') {
-      attackedProperty = 'playerPositionsThatHaveBeenAttacked';
-    } else {
-      attackedProperty = 'computerPositionsThatHaveBeenAttacked';
-    }
-
+    const boardClass = this.state[board + 'Class'];
+    let attackedProperty =
+      board === 'playerBoard'
+        ? 'playerPositionsThatHaveBeenAttacked'
+        : 'computerPositionsThatHaveBeenAttacked';
     const attackedBoard = this.state[attackedProperty];
 
-    if (this[board].isValidAttack(i, j, attackedBoard)) {
-      console.log('valid move');
+    if (boardClass.isValidAttack(i, j, attackedBoard)) {
       const boardState = this.state[board];
-      const [updatedBoardState, updatedAttackBoard] = this[board].receiveAttack(
+      const [updatedBoardState, updatedAttackBoard] = boardClass.receiveAttack(
         i,
         j,
         boardState,
         attackedBoard
       );
 
-      //use this & board to determine winner
-
-      console.log('all sunk', this[board].allShipsSunk());
-      const allShipsSunk = this[board].allShipsSunk();
+      const allShipsSunk = boardClass.allShipsSunk();
       if (allShipsSunk) {
-        let winner;
-        if (board === 'playerBoard') {
-          winner = 'Computer wins!';
-        } else {
-          winner = 'Player wins!';
-        }
+        let winner =
+          board === 'playerBoard' ? 'Computer wins!' : 'Player wins!';
         this.setState({
           allShipsSunk: true,
           winner: winner,
@@ -104,8 +92,6 @@ class App extends Component {
         [board]: updatedBoardState,
         isPlayerTurn: !this.state.isPlayerTurn
       });
-    } else {
-      console.log('invalid move');
     }
   };
 
@@ -134,7 +120,6 @@ class App extends Component {
           {playerBoardUi}
           <h3>Computer Board</h3>
           {computerBoardUi}
-          <br />
         </div>
         {this.state.disabled ? <h2>{this.state.winner}</h2> : ''}
         <button
