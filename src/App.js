@@ -2,7 +2,7 @@ import { Component } from 'react';
 import './App.css';
 import GameEngine from './components/GameEngine';
 import BoardSection from './components/BoardSection';
-import { renderPlayerUi } from './appUtils';
+import { renderPlayerUi, renderComputerUi } from './appUtils';
 
 class App extends Component {
   gameEngine;
@@ -59,7 +59,7 @@ class App extends Component {
     }
   }
 
-  updateBoardSectionState(i, j, board) {
+  updateBoardSectionState = (i, j, board) => {
     let attackedProperty;
     if (board === 'playerBoard') {
       attackedProperty = 'playerPositionsThatHaveBeenAttacked';
@@ -111,31 +111,7 @@ class App extends Component {
     } else {
       console.log('invalid move');
     }
-  }
-
-  //basically same function as renderPlayerUi
-  renderComputerUi() {
-    const dom = [];
-    let length = this.state.computerBoard.length;
-    for (let i = 0; i < length; i++) {
-      let arr = [];
-      for (let j = 0; j < length; j++) {
-        arr.push(
-          <BoardSection
-            isComputer={true}
-            attacked={this.state.computerPositionsThatHaveBeenAttacked[i][j]}
-            status={this.state.computerBoard[i][j]}
-            updateBoardSectionState={() => {
-              this.updateBoardSectionState(i, j, 'computerBoard');
-            }}
-          />
-        );
-      }
-      const div = <tr>{arr}</tr>;
-      dom.push(div);
-    }
-    return dom;
-  }
+  };
 
   renderComputerUiCheat() {
     const dom = [];
@@ -161,7 +137,12 @@ class App extends Component {
       this.state.playerBoard,
       this.state.playerPositionsThatHaveBeenAttacked
     );
-    const computerBoardUi = this.renderComputerUi();
+    const computerBoardUi = renderComputerUi(
+      this.state.computerBoard,
+      this.state.computerPositionsThatHaveBeenAttacked,
+      this.updateBoardSectionState
+    );
+
     const computerBoardUiCheat = this.renderComputerUiCheat();
 
     return (
