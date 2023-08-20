@@ -2,7 +2,7 @@ import { Component } from 'react';
 import './App.css';
 import GameEngine from './components/GameEngine';
 import BoardSection from './components/BoardSection';
-import { renderPlayerUi, renderComputerUi } from './appUtils';
+import { renderUi } from './appUtils';
 
 class App extends Component {
   gameEngine;
@@ -133,11 +133,13 @@ class App extends Component {
   }
 
   render() {
-    const playerBoardUi = renderPlayerUi(
+    const playerBoardUi = renderUi(
+      'player',
       this.state.playerBoard,
       this.state.playerPositionsThatHaveBeenAttacked
     );
-    const computerBoardUi = renderComputerUi(
+    const computerBoardUi = renderUi(
+      'computer',
       this.state.computerBoard,
       this.state.computerPositionsThatHaveBeenAttacked,
       this.updateBoardSectionState
