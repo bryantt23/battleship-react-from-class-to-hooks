@@ -2,7 +2,7 @@ import { Component } from 'react';
 import './App.css';
 import GameEngine from './components/GameEngine';
 import BoardSection from './components/BoardSection';
-import { renderUi } from './appUtils';
+import { renderUi, renderComputerUiCheat } from './appUtils';
 
 class App extends Component {
   gameEngine;
@@ -113,25 +113,6 @@ class App extends Component {
     }
   };
 
-  renderComputerUiCheat() {
-    const dom = [];
-    let length = this.state.computerBoard.length;
-    for (let i = 0; i < length; i++) {
-      let arr = [];
-      for (let j = 0; j < length; j++) {
-        arr.push(
-          <BoardSection
-            status={this.state.computerBoard[i][j]}
-            updateBoardSectionState={() => {}}
-          />
-        );
-      }
-      const div = <tr>{arr}</tr>;
-      dom.push(div);
-    }
-    return dom;
-  }
-
   render() {
     const playerBoardUi = renderUi(
       'player',
@@ -145,7 +126,9 @@ class App extends Component {
       this.updateBoardSectionState
     );
 
-    const computerBoardUiCheat = this.renderComputerUiCheat();
+    const computerBoardUiCheat = renderComputerUiCheat(
+      this.state.computerBoard
+    );
 
     return (
       <div className='App'>

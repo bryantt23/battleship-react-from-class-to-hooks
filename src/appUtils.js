@@ -33,3 +33,22 @@ export const renderUi = (
   console.log(dom);
   return dom;
 };
+
+export const renderComputerUiCheat = computerBoard => {
+  const dom = [];
+  let length = computerBoard.length;
+  for (let i = 0; i < length; i++) {
+    let arr = [];
+    for (let j = 0; j < length; j++) {
+      arr.push(
+        <BoardSection
+          status={computerBoard[i][j]}
+          updateBoardSectionState={() => {}}
+        />
+      );
+    }
+    const div = <tr>{arr}</tr>;
+    dom.push(div);
+  }
+  return dom;
+};
