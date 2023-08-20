@@ -14,18 +14,18 @@ const App = () => {
     winner: null,
     isPlayerTurn: true,
     disabled: false,
-    gameEngineClass: null,
-    playerBoardClass: null,
-    computerBoardClass: null
+    gameEngine: null,
+    gameEnginePlayerBoard: null,
+    gameEngineComputerBoard: null
   });
 
   useEffect(() => {
-    const gameEngineClass = new GameEngine();
-    gameEngineClass.startGame();
-    const playerBoardClass = gameEngineClass.playerGameboard;
-    const computerBoardClass = gameEngineClass.computerGameboard;
+    const gameEngine = new GameEngine();
+    gameEngine.startGame();
+    const gameEnginePlayerBoard = gameEngine.playerGameboard;
+    const gameEngineComputerBoard = gameEngine.computerGameboard;
 
-    const boardSize = playerBoardClass.getBoard().length;
+    const boardSize = gameEnginePlayerBoard.getBoard().length;
 
     let arr = [];
     for (let i = 0; i < boardSize; i++) {
@@ -35,21 +35,21 @@ const App = () => {
 
     setState(prevState => ({
       ...prevState,
-      playerBoard: [...playerBoardClass.getBoard()],
-      computerBoard: [...computerBoardClass.getBoard()],
+      playerBoard: [...gameEnginePlayerBoard.getBoard()],
+      computerBoard: [...gameEngineComputerBoard.getBoard()],
       playerPositionsThatHaveBeenAttacked: arr,
       computerPositionsThatHaveBeenAttacked: arr2,
-      gameEngineClass,
-      playerBoardClass,
-      computerBoardClass
+      gameEngine,
+      gameEnginePlayerBoard,
+      gameEngineComputerBoard
     }));
   }, []);
 
   useEffect(() => {
     if (!state.isPlayerTurn) {
       computerMove(
-        state.gameEngineClass,
-        state.playerBoardClass,
+        state.gameEngine,
+        state.gameEnginePlayerBoard,
         state.playerPositionsThatHaveBeenAttacked,
         updateBoardSectionState
       );
@@ -57,7 +57,8 @@ const App = () => {
   }, [state.isPlayerTurn]);
 
   const updateBoardSectionState = (i, j, board) => {
-    const boardClass = state[board + 'Class'];
+    const boardClass =
+      state['gameEngine' + board.charAt(0).toUpperCase() + board.slice(1)];
     let attackedProperty =
       board === 'playerBoard'
         ? 'playerPositionsThatHaveBeenAttacked'
