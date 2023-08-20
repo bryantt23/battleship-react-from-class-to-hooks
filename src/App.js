@@ -48,6 +48,18 @@ class App extends Component {
     });
   }
 
+  componentDidUpdate(prevProps, prevState) {
+    // Check if the turn changed from player to computer
+    if (prevState.isPlayerTurn === true && this.state.isPlayerTurn === false) {
+      computerMove(
+        this.gameEngine,
+        this.playerBoard,
+        this.state.playerPositionsThatHaveBeenAttacked,
+        this.updateBoardSectionState
+      );
+    }
+  }
+
   updateBoardSectionState = (i, j, board) => {
     let attackedProperty;
     if (board === 'playerBoard') {
@@ -87,22 +99,11 @@ class App extends Component {
         return;
       }
 
-      this.setState(
-        {
-          [attackedProperty]: updatedAttackBoard,
-          [board]: updatedBoardState,
-          isPlayerTurn: !this.state.isPlayerTurn
-        },
-        () => {
-          if (!this.state.isPlayerTurn)
-            computerMove(
-              this.gameEngine,
-              this.playerBoard,
-              this.state.playerPositionsThatHaveBeenAttacked,
-              this.updateBoardSectionState
-            );
-        }
-      );
+      this.setState({
+        [attackedProperty]: updatedAttackBoard,
+        [board]: updatedBoardState,
+        isPlayerTurn: !this.state.isPlayerTurn
+      });
     } else {
       console.log('invalid move');
     }
